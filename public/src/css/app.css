@@ -1,0 +1,13 @@
+.card img {
+  object-fit: contain;
+  max-height: 190px;
+}
+
+.price {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.description {
+  color: #7f7f7f;
+}

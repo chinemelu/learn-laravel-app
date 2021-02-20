@@ -11,12 +11,17 @@
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          <i class="fa fa-user"></i> User Account
+          <i class="fa fa-user"></i> User Management
           </a>
           <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="#">User Account</a></li>
+          @if(Auth::check())
+            <li><a class="dropdown-item" href="{{ route('user.profile') }}">User Profile</a></li>
+            <li><a class="dropdown-item" href="{{ route('user.logout') }}">Logout</a></li>
+          @else
+            <li><a class="dropdown-item" href="{{ route('user.signup') }}">Signup</a></li>
+            <li><a class="dropdown-item" href="{{ route('user.signin') }}">Signin</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="#">Logout</a></li>
+          @endif       
           </ul>
         </li>
       </ul>

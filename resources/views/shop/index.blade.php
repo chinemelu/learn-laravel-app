@@ -13,10 +13,10 @@
           <img src="{{ $product->imagePath }}" class="card-img-top img-responsive" alt="Harry Potter Book Poster">
           <div class="card-body">
             <h5 class="card-title">{{ $product->title }}</h5>
-            <p class="card-text description"></p>
+            <p class="card-text description">{{ $product->description }}</p>
             <div class="pull-left price">{{ $product->price }}</div>
             <div class="add-to-cart-container">
-              <a href="#" class="btn btn-success pull-right">Add to Cart</a>
+              <a href="{{ route('product.addToCart', [ 'id' => $product->id ]) }}" class="btn btn-success pull-right">Add to Cart</a>
             </div>
           </div> 
         </div>

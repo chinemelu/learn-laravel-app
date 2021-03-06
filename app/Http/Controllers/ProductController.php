@@ -44,4 +44,16 @@ class ProductController extends Controller
             'total' => $total
         ]);
     }
+    public function postCheckout() {
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY', ''));
+        function calculateOrderAmount(array $items): int {
+        // Replace this constant with a calculation of the order's amount
+        // Calculate the order total on the server to prevent
+        // customers from directly manipulating the amount on the client
+            $oldCart=Session::get('cart');
+            $cart = new Cart($oldCart);
+            $total = $cart->totalPrice;
+            return $total;
+        }
+    }
 }

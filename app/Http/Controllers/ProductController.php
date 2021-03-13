@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use App\Models\Cart;
+use Exception;
 use Illuminate\Support\Facades\Session;
 
 class ProductController extends Controller
@@ -44,16 +45,34 @@ class ProductController extends Controller
             'total' => $total
         ]);
     }
-    public function postCheckout() {
-        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY', ''));
-        function calculateOrderAmount(array $items): int {
-        // Replace this constant with a calculation of the order's amount
-        // Calculate the order total on the server to prevent
-        // customers from directly manipulating the amount on the client
-            $oldCart=Session::get('cart');
-            $cart = new Cart($oldCart);
-            $total = $cart->totalPrice;
-            return $total;
+    public function postCheckout(Request $request) {
+        if (!Session::has('cart')) {
+            return redirect()->route('shop.shoppingCart');
+        }
+        $oldCart = Session::get('cart');
+        $cart = new Cart($oldCart);
+
+        try {
+            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+            function calculateOrderAmount(array $items): int {
+            // Replace this constant with a calculation of the order's amount
+            // Calculate the order total on the server to prevent
+            // customers from directly manipulating the amount on the client
+                $oldCart=Session::get('cart');
+                $cart = new Cart($oldCart);
+                $total = $cart->totalPrice;
+                return $total;
+            }
+            header('Content-Type: application/json');
+            $YOUR_DOMAIN = 'http://localhost:4242';
+            $checkout_session = \Stripe\Checkout\Session::create([
+              'mode' => 'payment',
+              'success_url' => $YOUR_DOMAIN . '/success.html',
+              'cancel_url' => $YOUR_DOMAIN . '/cancel.html',
+            ]);
+            echo json_encode(['id' => $checkout_session->id]);
+        } catch(Exception $err) {
+
         }
     }
 }

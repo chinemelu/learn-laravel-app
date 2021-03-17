@@ -8,6 +8,7 @@ use App\Models\Cart;
 use Exception;
 use Illuminate\Support\Facades\Session;
 
+
 class ProductController extends Controller
 {
     public function getIndex() {
@@ -52,27 +53,34 @@ class ProductController extends Controller
         $oldCart = Session::get('cart');
         $cart = new Cart($oldCart);
 
-        try {
-            \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-            function calculateOrderAmount(array $items): int {
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
+        function calculateOrderAmount(array $items): int {
             // Replace this constant with a calculation of the order's amount
             // Calculate the order total on the server to prevent
             // customers from directly manipulating the amount on the client
-                $oldCart=Session::get('cart');
-                $cart = new Cart($oldCart);
-                $total = $cart->totalPrice;
-                return $total;
-            }
-            header('Content-Type: application/json');
-            $YOUR_DOMAIN = 'http://localhost:4242';
-            $checkout_session = \Stripe\Checkout\Session::create([
-              'mode' => 'payment',
-              'success_url' => $YOUR_DOMAIN . '/success.html',
-              'cancel_url' => $YOUR_DOMAIN . '/cancel.html',
-            ]);
-            echo json_encode(['id' => $checkout_session->id]);
-        } catch(Exception $err) {
-
+            $oldCart=Session::get('cart');
+            $cart = new Cart($oldCart);
+            $total = $cart->totalPrice;
+            return $total;
         }
+        header('Content-Type: application/json');
+        try {
+            // retrieve JSON from POST body
+            $json_str = file_get_contents('php://input');
+            $json_obj = json_decode($json_str);
+            $paymentIntent = \Stripe\PaymentIntent::create([
+                'amount' => calculateOrderAmount($json_obj->items),
+                'currency' => 'usd',
+            ]);
+            $output = [
+                'clientSecret' => $paymentIntent->client_secret,
+            ];
+            echo json_encode($output);
+        } catch (\Error $e) {
+            http_response_code(500);
+            echo json_encode(['error' => $e->getMessage()]);
+        }
+        Session::forget('cart');
+        return redirect()->route('product.index')->with('success', 'Successfullly purchased products!');
     }
 }

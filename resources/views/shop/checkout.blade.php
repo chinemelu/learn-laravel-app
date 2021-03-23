@@ -6,6 +6,8 @@
 
 @section('content')
   <div class="row">
+    <div class="spinner-border hidden">
+    </div>
     <div class="col-sm-6 col-md-4 offset-md-4 offset-sm-3">
       <h1>Checkout</h1>
       <h4>Your Total: {{ $total }}</h4>
@@ -55,6 +57,11 @@
         </div>
         {{ csrf_field() }}
         <button type="submit" class="btn btn-success" id="checkout-btn">Buy now</button>
+        <p id="card-error" role="alert"></p>
+        <p class="result-message hidden">
+          Payment succeeded, see the result in your
+          <a href="" target="_blank">Stripe dashboard.</a> Refresh the page to pay again.
+      </p>
       </form>
     </div>
   </div>

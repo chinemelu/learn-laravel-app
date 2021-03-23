@@ -32,9 +32,13 @@ Route::get('/checkout', [
     'as' => 'checkout'
 ]);
 
-Route::post('/checkout', [
-    'uses' => 'App\Http\Controllers\ProductController@postCheckout',
-    'as' => 'checkout'
+Route::get('/checkout-success', [
+    'uses' => 'App\Http\Controllers\ProductController@handleCheckoutSuccess',
+    'as' => 'checkout.success'
+]);
+Route::post('/payment-intent', [
+    'uses' => 'App\Http\Controllers\ProductController@getPaymentIntent',
+    'as' => 'paymentintent'
 ]);
 
 Route::group(['prefix' => 'user'], function() {

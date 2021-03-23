@@ -7,7 +7,7 @@ use App\Models\Product;
 use App\Models\Cart;
 use Exception;
 use Illuminate\Support\Facades\Session;
-
+use Stripe\PaymentIntent;
 
 class ProductController extends Controller
 {
@@ -46,7 +46,11 @@ class ProductController extends Controller
             'total' => $total
         ]);
     }
-    public function postCheckout(Request $request) {
+    public function handleCheckoutSuccess(Request $request) {
+        Session::forget('cart');
+        return redirect()->route('product.index')->with('success', 'Successfully purchased products!');
+    }
+    public function getPaymentIntent(Request $request) {
         if (!Session::has('cart')) {
             return redirect()->route('shop.shoppingCart');
         }
@@ -54,22 +58,19 @@ class ProductController extends Controller
         $cart = new Cart($oldCart);
 
         \Stripe\Stripe::setApiKey(env('STRIPE_SECRET_KEY'));
-        function calculateOrderAmount(array $items): int {
+        function calculateOrderAmount(): int {
             // Replace this constant with a calculation of the order's amount
             // Calculate the order total on the server to prevent
             // customers from directly manipulating the amount on the client
             $oldCart=Session::get('cart');
             $cart = new Cart($oldCart);
             $total = $cart->totalPrice;
-            return $total;
+            return $total * 100;
         }
         header('Content-Type: application/json');
         try {
-            // retrieve JSON from POST body
-            $json_str = file_get_contents('php://input');
-            $json_obj = json_decode($json_str);
             $paymentIntent = \Stripe\PaymentIntent::create([
-                'amount' => calculateOrderAmount($json_obj->items),
+                'amount' => calculateOrderAmount(),
                 'currency' => 'usd',
             ]);
             $output = [
@@ -80,7 +81,5 @@ class ProductController extends Controller
             http_response_code(500);
             echo json_encode(['error' => $e->getMessage()]);
         }
-        Session::forget('cart');
-        return redirect()->route('product.index')->with('success', 'Successfullly purchased products!');
     }
 }

@@ -8,10 +8,11 @@ const purchase = {
 
 // Disable the button until we have Stripe set up on the page
 document.querySelector("button").disabled = true;
-fetch("/create.php", {
+fetch("/payment-intent", {
   method: "POST",
   headers: {
-    "Content-Type": "application/json"
+    "Content-Type": "application/json",
+    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')['content']
   },
   body: JSON.stringify(purchase)
 })
@@ -19,6 +20,7 @@ fetch("/create.php", {
     return result.json();
   })
   .then((data) => {
+    console.log(data, 'DAAATAAAAA');
     const elements = stripe.elements();
 
     const style = {
@@ -51,30 +53,32 @@ fetch("/create.php", {
 
     cardExpiry.mount('#card-expiry')
 
-
-    card.on("change", (event) => {
-      // Disable the Pay button if there are no card details in the Element
-      document.querySelector("button").disabled = event.empty;
-      document.querySelector("#card-error").textContent = event.error ? event.error.message : "";
+    const elementsArray = [ cardNumber, cardCvc, cardExpiry ];
+    elementsArray.forEach(element => {
+      element.on("change", (event) => {
+        // Disable the Pay button if there are no card details in the Element
+        document.querySelector("button").disabled = event.empty;
+        document.querySelector("#card-error").textContent = event.error ? event.error.message : "";
+      })
     });
 
-    const form = document.getElementById("payment-form");
+    const form = document.getElementById("checkout-form");
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       // Complete payment when the submit button is clicked
-      payWithCard(stripe, card, data.clientSecret);
+      payWithCard(stripe, cardNumber, data.clientSecret);
     });
   });
 
 // Calls stripe.confirmCardPayment
 // If the card requires authentication Stripe shows a pop-up modal to
 // prompt the user to enter authentication details without leaving your page.
-const payWithCard = (stripe, card, clientSecret) => {
+const payWithCard = (stripe, cardNumber, clientSecret) => {
   loading(true);
   stripe
     .confirmCardPayment(clientSecret, {
       payment_method: {
-        card: card
+        card: cardNumber
       }
     })
     .then((result) => {
@@ -118,11 +122,9 @@ const loading = (isLoading) => {
   if (isLoading) {
     // Disable the button and show a spinner
     document.querySelector("button").disabled = true;
-    document.querySelector("#spinner").classList.remove("hidden");
-    document.querySelector("#button-text").classList.add("hidden");
+    document.querySelector(".spinner-border").classList.remove("hidden");
   } else {
     document.querySelector("button").disabled = false;
-    document.querySelector("#spinner").classList.add("hidden");
-    document.querySelector("#button-text").classList.remove("hidden");
+    document.querySelector(".spinner-border").classList.add("hidden");
   }
 };

@@ -105,6 +105,14 @@ const orderComplete = (paymentIntentId) => {
     );
   document.querySelector(".result-message").classList.remove("hidden");
   document.querySelector("button").disabled = true;
+  fetch("/checkout-success", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')['content']
+    },
+    body: JSON.stringify(purchase)
+  })
 };
 
 // Show the customer the error from Stripe if their card fails to charge

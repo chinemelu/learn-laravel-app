@@ -32,7 +32,7 @@ Route::get('/checkout', [
     'as' => 'checkout'
 ]);
 
-Route::get('/checkout-success', [
+Route::post('/checkout-success', [
     'uses' => 'App\Http\Controllers\ProductController@handleCheckoutSuccess',
     'as' => 'checkout.success'
 ]);
@@ -76,3 +76,5 @@ Route::group(['prefix' => 'user'], function() {
         ]);
     });
 });
+
+Route::stripeWebhooks('/stripe/charge/succeeded');

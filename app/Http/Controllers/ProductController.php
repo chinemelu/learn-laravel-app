@@ -46,10 +46,6 @@ class ProductController extends Controller
             'total' => $total
         ]);
     }
-    public function handleCheckoutSuccess(Request $request) {
-        Session::forget('cart');
-        return redirect()->route('product.index')->with('success', 'Successfully purchased products!');
-    }
     public function getPaymentIntent(Request $request) {
         if (!Session::has('cart')) {
             return redirect()->route('shop.shoppingCart');
